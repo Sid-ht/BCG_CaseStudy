@@ -60,7 +60,7 @@ unit_case_df = spark.read.format("csv").option("header", "true").option("inferSc
 
 #unit_case_df.select("VEH_BODY_STYL_ID").distinct().show(truncate=False)
 
-unit_case_df.filter(unit_case_df.VEH_BODY_STYL_ID.like('%MOTORCYCLE%')).count()
+unit_case_df.filter(unit_case_df.VEH_BODY_STYL_ID.like('%MOTORCYCLE%')).count() #784
 
 female_person_df = person_df.filter(col("PRSN_GNDR_ID") =='FEMALE')
 female_person_df.groupBy("DRVR_LIC_STATE_ID").agg((count("CRASH_ID")).alias("count")).sort("count",  ascending=False ).show(1,truncate=False)
@@ -72,7 +72,6 @@ female_person_df.groupBy("DRVR_LIC_STATE_ID").agg((count("CRASH_ID")).alias("cou
 +-----------------+-----+
 
 most_vehicle_crashes = unit_case_df.groupBy("VEH_MAKE_ID").agg(count("DEATH_CNT").alias("death_count")).orderBy(col("death_count"))
-#most_vehicle_crashes.show()
 
 windowSpec = Window.orderBy(desc("death_count"))
 most_vehicle_crashes.withColumn("rank", dense_rank().over(windowSpec)).filter((col("rank")>=5) &(col("rank")<=15)).drop("rank").show(truncate=False)
