@@ -148,5 +148,10 @@ join_df.groupBy("DRVR_ZIP").count().orderBy(col("count").desc()).show(5,truncate
 +--------+-----+
 only showing top 5 rows
 
-
-
+damage_level_df = unit_case_df.where((unit_case_df.VEH_DMAG_SCL_1_ID.contains("NO DAMAGE")) & (unit_case_df.VEH_DMAG_SCL_2_ID.like("NO DAMAGE")) |
+                   ((regexp_extract("VEH_DMAG_SCL_1_ID", '\d+', 0) > 4) & (regexp_extract("VEH_DMAG_SCL_2_ID", '\d+', 0) > 4)) 
+				   & unit_case_df.FIN_RESP_TYPE_ID.like('%INSURANCE'))
+         
+damage_level_df.select("CRASH_ID").distinct().count()
+#Analytics7_result         
+1327
