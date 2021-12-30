@@ -12,8 +12,6 @@ schema = StructType([(StructField("CRASH_ID", IntegerType())),
 
 charges_use_df = spark.read.format("csv").schema(schema).option("header", "true").load("dbfs:/FileStore/shared_uploads/siddharthsinha.28@gmail.com/Charges_use.csv")
 
-charges_use_df.show(10,truncate=False)
-
 person_schema = StructType([(StructField("CRASH_ID", IntegerType())),
 (StructField("UNIT_NBR", IntegerType())),
 (StructField("PRSN_NBR", IntegerType())),
@@ -52,18 +50,15 @@ person_df = spark.read.format("csv").schema(person_schema).option("header", "tru
 #person_df.show(10,truncate=False)
 
 male_person_df = person_df.filter(col("PRSN_GNDR_ID") =='MALE')
-male_person_df.count()  #96782
+male_person_df.count()  #96782 #Analytics1_Result
+
 
 unit_case_df = spark.read.format("csv").option("header", "true").option("inferSchema","true").load("dbfs:/FileStore/shared_uploads/siddharthsinha.28@gmail.com/Units_use.csv")
 
-#unit_case_df.show(10,truncate=False)
-
-#unit_case_df.select("VEH_BODY_STYL_ID").distinct().show(truncate=False)
-
-unit_case_df.filter(unit_case_df.VEH_BODY_STYL_ID.like('%MOTORCYCLE%')).count() #784
+unit_case_df.filter(unit_case_df.VEH_BODY_STYL_ID.like('%MOTORCYCLE%')).count() #784 #Analytics2_result
 
 female_person_df = person_df.filter(col("PRSN_GNDR_ID") =='FEMALE')
-female_person_df.groupBy("DRVR_LIC_STATE_ID").agg((count("CRASH_ID")).alias("count")).sort("count",  ascending=False ).show(1,truncate=False)
+female_person_df.groupBy("DRVR_LIC_STATE_ID").agg((count("CRASH_ID")).alias("count")).sort("count",  ascending=False ).show(1,truncate=False) #Analytics3_result
 
 +-----------------+-----+
 |DRVR_LIC_STATE_ID|count|
@@ -75,7 +70,7 @@ most_vehicle_crashes = unit_case_df.groupBy("VEH_MAKE_ID").agg(count("DEATH_CNT"
 
 windowSpec = Window.orderBy(desc("death_count"))
 most_vehicle_crashes.withColumn("rank", dense_rank().over(windowSpec)).filter((col("rank")>=5) &(col("rank")<=15)).drop("rank").show(truncate=False)
-
+#Analytics4_result
 +------------+-----------+
 |VEH_MAKE_ID |death_count|
 +------------+-----------+
@@ -104,7 +99,7 @@ window = Window.partitionBy("VEH_BODY_STYL_ID").orderBy(col("count").desc())
 top_group = top_body_styles.withColumn("rank", dense_rank().over(window)).filter("rank= 1").drop("rank", "count")
 
 top_group.show()
-
+#Analytics5_result
 +--------------------+-----------------+
 |    VEH_BODY_STYL_ID|PRSN_ETHNICITY_ID|
 +--------------------+-----------------+
@@ -132,7 +127,26 @@ top_group.show()
 only showing top 20 rows
 
 
+valid_zip = person_df.na.drop(subset= ["DRVR_ZIP"])
+join_expr = unit_case_df.CRASH_ID == valid_zip.CRASH_ID
 
+join_df = unit_case_df.join(valid_zip, join_expr, "inner") \
+.where("VEH_BODY_STYL_ID in ('PASSENGER CAR, 4-DOOR', 'SPORT UTILITY VEHICLE', 'PASSENGER CAR, 2-DOOR') and  "
+       "PRSN_ALC_RSLT_ID in ('Positive') ")
+
+join_df.groupBy("DRVR_ZIP").count().orderBy(col("count").desc()).show(5,truncate=False)
+         
+#Analytics6_result         
++--------+-----+
+|DRVR_ZIP|count|
++--------+-----+
+|78521   |80   |
+|76010   |66   |
+|79938   |61   |
+|79936   |58   |
+|78240   |45   |
++--------+-----+
+only showing top 5 rows
 
 
 
