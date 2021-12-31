@@ -1,6 +1,6 @@
 from pyspark.sql import SparkSession
 from pyspark.sql.types import StructType, StructField, IntegerType, StringType, TimestampType, DecimalType, DateType
-from pyspark.sql.functions import col, count,expr, max, dense_rank, desc
+from pyspark.sql.functions import col, count,expr, max, dense_rank, desc, regexp_extract
 from pyspark.sql.window import Window
 spark = SparkSession.builder.appName("CaseAnalysis").master("local[*]").getOrCreate()
 
